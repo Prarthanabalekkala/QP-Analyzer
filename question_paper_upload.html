@@ -1,0 +1,361 @@
+{% extends 'students/students_base.html' %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block style %}
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .upload-container {
+        width: 100%;
+        max-width: 800px;
+        height: 40vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        border: 2px dashed #4f46e5;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        color: #dbeafe;
+        text-align: center;
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+
+    .upload-container:hover {
+        border-color: #6366f1;
+    }
+
+    .upload-container input[type="file"] {
+        display: none;
+    }
+
+    .upload-container label {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s ease;
+    }
+
+    .upload-container label:hover {
+        background: linear-gradient(135deg, #4338ca, #4f46e5);
+    }
+
+    .filename {
+        margin-top: 12px;
+        font-size: 16px;
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+
+    .submit-btn {
+        margin-top: 24px;
+        padding: 12px 24px;
+        font-size: 16px;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+    }
+
+    .submit-btn:enabled {
+        opacity: 1;
+    }
+
+    .submit-btn:disabled {
+        cursor: not-allowed;
+    }
+
+    .processing {
+        display: none;
+        text-align: center;
+        margin-top: 24px;
+    }
+
+    .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #4f46e5;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .maincontent {
+        padding: 40px;
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 32px;
+    }
+
+    #infoBox {
+        width: 100%;
+        height: auto;
+        border: 2px solid #4f46e5;
+        margin: 32px 0;
+        border-radius: 12px;
+        text-align: center;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 16px;
+        background: #1e293b;
+        color: white;
+        outline: none;
+    }
+
+    .button {
+        display: flex;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        font-size: 16px;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #4338ca, #4f46e5);
+    }
+    h1{
+        color: whitesmoke;
+    }
+    label{
+        color: wheat;
+    }
+    .infoBox{
+        color: white;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="maincontent">
+    <h1 style="text-align: left;">Upload Question Paper (If Not Present)</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="upload-container">
+            <div>
+                <p>Upload Excel File</p>
+                <label for="excelFile">Choose an Excel File</label>
+                <input type="file" id="excelFile" name="excel_file" accept=".xlsx, .xls" />
+                <p class="filename" id="filename">No file chosen</p>
+                <button class="submit-btn" id="submitBtn" type="button" disabled>Submit</button>
+            </div>
+
+            <div class="processing">
+                <p>Please wait, processing...</p>
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </form>
+    <br>
+    <h1 style="text-align: left;">Select Question Paper to Perform Analysis</h1>
+
+    <form>
+        <div class="form-group">
+            <label for="qPaperSelect">Select Question Paper:</label>
+            <select class="form-control" id="qPaperSelect" name="selected_qpaper" onchange="updateInfoBox()">
+                {% for id, details in QPapers.items %}
+                <option value="{{ id }}" 
+                        data-questionpaper-name="{{ details.QuestionPaper_Name }}" 
+                        data-course-code="{{ details.Course_Code }}" 
+                        data-course-name="{{ details.Course_Name }}" 
+                        data-examination-month="{{ details.Examination_Month }}">
+                    {{ details.text_to_display }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="infoBox">
+            <br>
+            <p>Select a question paper to see details here.</p>
+        </div>
+
+        <div class="button">
+            <button type="submit" class="btn-primary" onclick="redirectToAnalysisPage(event)">Analyze</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function redirectToAnalysisPage(event) {
+        event.preventDefault(); // Prevent the form from submitting normally
+        
+        // Get the selected question paper id
+        const selectedOption = parseInt(document.getElementById('qPaperSelect').value);
+        
+        // Redirect to the new URL with the selected id
+        window.location.href = `/qPaperAnalyze/${selectedOption}`;
+    }
+</script>
+
+<script>
+    function updateInfoBox() {
+        const dropdown = document.getElementById("qPaperSelect");
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+
+        // Get data attributes from the selected option
+        const questionPaperName = selectedOption.getAttribute("data-questionpaper-name");
+        const courseCode = selectedOption.getAttribute("data-course-code");
+        const courseName = selectedOption.getAttribute("data-course-name");
+        const examinationMonth = selectedOption.getAttribute("data-examination-month");
+
+        // Update the infoBox content
+        const infoBox = document.getElementById("infoBox");
+        infoBox.innerHTML = `
+            <p style="color:gold;"><strong>Question Paper Name:</strong> ${questionPaperName}</p>
+            <p style="color:gold;"><strong>Course Code:</strong> ${courseCode}</p>
+            <p style="color:gold;"><strong>Course Name:</strong> ${courseName}</p>
+            <p style="color:gold;"><strong>Examination Month:</strong> ${examinationMonth}</p>
+        `;
+    }
+</script>
+
+
+
+
+<script>
+    // Enable the submit button and display the filename when a file is chosen
+    document.getElementById('excelFile').addEventListener('change', function () {
+        const filenameDisplay = document.getElementById('filename');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (this.files.length > 0) {
+            filenameDisplay.textContent = 'Selected file: ' + this.files[0].name;
+            submitBtn.disabled = false; // Enable the submit button
+        } else {
+            filenameDisplay.textContent = 'No file chosen';
+            submitBtn.disabled = true; // Disable the submit button if no file is selected
+        }
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', function () {
+        const form = document.getElementById('uploadForm');
+        const formData = new FormData(form); // Create FormData from the form
+
+        // Show the processing section with the spinner
+        const processingDiv = document.querySelector('.processing');
+        processingDiv.style.display = 'block'; // Show the processing div
+
+        let timeoutReached = false; // Flag to check if minimum 3 seconds have passed
+
+        // Set a timeout for at least 3 seconds
+        setTimeout(() => {
+            timeoutReached = true;
+        }, 3000);
+
+        // Make the AJAX request to upload the file
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '{% url "upload_file" %}', true); // Ensure the URL is correct
+
+        // Set up the callback function to handle the response
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                // Parse the JSON response
+                const response = JSON.parse(xhr.responseText);
+
+                // Handle the response
+                if (response.status === 600) {
+                    const filename = response.file_name; // Extract the filename
+
+                    // Send the second POST request to /api/QPaperExcelToDB/ with the filename
+                    const secondRequest = new XMLHttpRequest();
+                    secondRequest.open('POST', '/api/QPaperExcelToDB/', true);
+                    secondRequest.setRequestHeader('Content-Type', 'application/json');
+
+                    const requestBody = JSON.stringify({
+                        filename: filename // Send the filename as part of the request
+                    });
+
+                    // Handle the second request response
+                    secondRequest.onload = function () {
+                        if (secondRequest.status === 200) {
+                            // Check if minimum 3 seconds have passed
+                            const interval = setInterval(() => {
+                                if (timeoutReached) {
+                                    processingDiv.style.display = 'none'; // Hide the processing div
+                                    clearInterval(interval); // Clear the interval once completed
+                                }
+
+                            }, 100); // Check every 100ms
+                            alert("Question Paper Uploaded !")
+                            location.href = "#sucess";
+                        } else {
+                            alert('Error in processing the question paper data.');
+                            alert("Something went wrong! Please try again later.")
+                            location.href = "#error";
+                        }
+                    };
+
+                    secondRequest.send(requestBody); // Send the second request with the filename
+                } else {
+                    alert(response.status_msg || 'File upload failed!');
+                    processingDiv.style.display = 'none'; // Hide if file upload fails
+                }
+            } else {
+                alert('An error occurred during file upload.');
+                processingDiv.style.display = 'none'; // Hide on server error
+            }
+        };
+
+        // Send the FormData (file)
+        xhr.send(formData);
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'students/students_base.html' %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block style %}
+<style>
+    .rightDiv {
+        background-color: blue;
+        height: 100vh; /* Full viewport height */
+        width: 100%;
+        background-image: url("/media/Images/students_home.webp");
+        display: flex; /* Flexbox for centering */
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        padding: 0;
+        margin: 0;
+        position: relative; /* To position inner elements if needed */
+    }
+
+    .centerDiv {
+        background-color: black;
+        padding: 20px;
+        border-radius: 10px; /* Optional rounded corners */
+        text-align: center;
+    }
+
+    .centerDiv h1 {
+        color: yellow;
+        margin: 0;
+    }
+
+</style>
+{% endblock %}
+
+
+{% block content %}
+<!-- <div class="rightDiv">
+    
+    <p>Welcome, {{ user.username }}!</p> -->
+<!-- </div>      -->
+<div class="rightDiv">
+    <div class="centerDiv">
+        <h1>Welcome, {{ user.username }}!</h1>
+    </div>
+</div>    
+
+{% endblock %}

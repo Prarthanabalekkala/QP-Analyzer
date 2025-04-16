@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Paper Analysis</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        
+        h1 {
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        /* Style for the table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+
+        .table th,
+        .table td {
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        /* Scrollable table body */
+        .table-responsive {
+            max-height: 50vh;
+            /* 50% of viewport height */
+            overflow-y: auto;
+            /* Vertical scroll */
+            display: block;
+        }
+
+        /* Stripe the table rows for better readability */
+        .table-striped tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        /* Table header styles */
+        .thead-dark th {
+            background-color: #343a40;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Hover effect on rows */
+        .table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Optional: Style for table header cells */
+        .table th {
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        /* Optional: Add some margin and padding around the canvas */
+        .canvas-container {
+            margin-top: 30px;
+        }
+
+        .alert strong {
+            padding: 10px;
+        }
+    </style>
+    <style>
+        .module-heading {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+            width: 100%;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .topic-list {
+            font-size: 1.1rem;
+            list-style-type: decimal;
+            padding-left: 0;
+            margin: 0;
+            background-color: #f9f9f9;
+            padding: 10px;
+        }
+
+        .collapsible-row {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .collapsible-button {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .collapsible-button:hover {
+            background-color: #0056b3;
+        }
+
+        button {
+            background-color: black;
+            color: gold;
+            padding: 8px;
+            border-radius: 10px;
+
+        }
+
+        button:hover {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+    <style>
+        .question-card {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            /* Add pointer cursor to show it's clickable */
+        }
+
+        .question-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .question-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .question-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .answer-text {
+            background-color: #eaeaea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 0;
+            /* Initially hide the answer */
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+        }
+
+        /* Expanded state */
+        .question-card.active .answer-text {
+            max-height: 500px;
+            /* Ensure enough space for content */
+            padding: 15px;
+            /* Retain padding on expand */
+        }
+
+        .text {
+            font-size: 1em;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #questions-container {
+            max-height: 90vh;
+            /* Set the height to 90% of the viewport height */
+            overflow-y: auto;
+            /* Enable vertical scrolling if content overflows */
+            padding: 10px;
+            /* Optional: Add some padding inside the container */
+            border: 1px solid #ddd;
+            /* Optional: Border for visual clarity */
+            background-color: #f9f9f9;
+            /* Optional: Light background color */
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Question Paper Analysis</h1>
+
+        <!-- Question Paper ID -->
+        <div class="alert alert-primary" style="padding: 15px;">
+            <div style="margin: 10px;margin-left: 25%;">
+                <strong>Course Code:</strong> <span
+                    style="display: inline-block; width: 800px;">{{Metadata.CourseCode}}</span><br>
+                <strong>Subject Name:</strong> <span
+                    style="display: inline-block; width: 800px;">{{Metadata.SubjectName}}</span><br>
+                <strong>Exam Name:</strong> <span
+                    style="display: inline-block; width: 800px;">{{Metadata.ExamName}}</span><br>
+                <strong>Month/Year:</strong> <span
+                    style="display: inline-block; width: 800px;">{{Metadata.MonthYear}}</span><br>
+                <strong>Exam Type:</strong> <span
+                    style="display: inline-block; width: 800px;">{{Metadata.ExamType}}</span><br>
+            </div>
+        </div>
+
+        <div class="syllabus-container" style="width: 100%;">
+            <div style="display: flex;">
+                <div>
+                    <h1 class=" my-4">Syllabus - Topics</h1>
+                </div>
+                <div style="padding: 35px;">
+                    <button id="column-view-btn">Column View</button>
+                    <button id="row-view-btn">Row View</button>
+                </div>
+            </div>
+
+            <!-- Placeholder for the modules -->
+            <div id="modules-container" class="container-fluid" style="display: flex; flex-direction: column;"></div>
+        </div>
+
+        <h1>Question Paper Breakdown</h1>
+        <div id="questions-container">
+            <!-- Questions will be dynamically populated here -->
+        </div>
+
+
+
+        <!-- Topic-Wise Marks Distribution (Row 1) -->
+
+
+        <!-- Mark-Wise and Module-Wise Charts (Row 2) -->
+        <h1>Marks Wise Distribution</h1>
+        <br />
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h5>Mark-Wise Question Count - Line Chart</h5>
+                <canvas id="markWiseLineChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h5>Mark-Wise Question Count - Bar Chart</h5>
+                <canvas id="markWiseBarChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h5>Mark-Wise Question Count - Pie Chart</h5>
+                <canvas id="markWisePieChart"></canvas>
+            </div>
+        </div>
+        <br>
+
+        <!-- Module-Wise Charts (Row 3) -->
+        <h1>Module Wise Marks Distribution</h1>
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h5>Module-Wise Marks Distribution - Pie Chart</h5>
+                <canvas id="moduleWisePieChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h5>Module-Wise Marks Distribution - Doughnut Chart</h5>
+                <canvas id="moduleWiseDoughnutChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h5>Module-Wise Marks Distribution - Bar Chart</h5>
+                <canvas id="moduleWiseBarChart"></canvas>
+            </div>
+        </div>
+
+        <h1>Topic-Wise Marks Distribution</h1>
+        <div class="row mb-4">
+            <div class="col-md-12 table-responsive">
+                <table class="table table-bordered" id="topicMarksTable">
+                    <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Total Marks</th>
+                            <th>Module Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be populated dynamically -->
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md">
+                <canvas id="topicSummaryChart"></canvas>
+            </div>
+        </div>
+
+        <br>
+        <div>
+            <h3>Top 5 Topics</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Total Marks</th>
+                        <th>Module Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in Top5Topics %}
+                    <tr>
+                        <td>{{ topic.Topic }}</td>
+                        <td>{{ topic.TotalMarks }}</td>
+                        <td>{{ topic.ModuleName }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Function to fetch the data from the API
+        function fetchQuestions(QPaperID) {
+            fetch(`/api/getQuestionsTopicsAnswer/${QPaperID}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear the container before adding new data
+                    const container = document.getElementById('questions-container');
+                    container.innerHTML = '';
+                    var qNumber = 1;
+                    if (data.questions && data.questions.length > 0) {
+                        // Loop through the questions and display them
+                        data.questions.forEach(question => {
+                            const questionCard = document.createElement('div');
+                            questionCard.classList.add('question-card');
+                            questionCard.classList.add('collapsible'); // Adding collapsible class for styling and functionality
+
+                            questionCard.innerHTML = `
+                        <h4 class="question-title">Q${qNumber}: ${question.QuestionText} (${question.Mark} Marks)</h4>
+                        <div class="question-details" style="padding:10px;">
+                            <span><strong>Topic:</strong> ${question.Topic || 'N/A'}</span><br>
+                            <span><strong>Module:</strong> Module ${question.ModuleNumber}</span><br>
+                            <br>
+                            <span><strong>Marks:</strong> ${question.Mark}</span><br>
+                        </div>
+                        <div class="answer-text" style="padding:0;">
+                            <strong>Answer: (Just for Reference)</strong>
+                            <p style="padding:8px;">${question.AnswerText || 'No answer provided.'}</p>
+                        </div>
+                    `;
+                            qNumber += 1;
+
+                            // Add event listener to make the answer section collapsible
+                            questionCard.addEventListener('click', function () {
+                                // Toggle the 'active' class to show/hide the answer text
+                                questionCard.classList.toggle('active');
+                            });
+
+                            container.appendChild(questionCard);
+                        });
+                    } else {
+                        container.innerHTML = '<p>No questions found.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching questions:', error);
+                    document.getElementById('questions-container').innerHTML = '<p>Error loading data.</p>';
+                });
+        }
+
+        // Fetch questions for a specific QPaperID (example QPaperID = 1)
+        var QPaperID = "{{ Metadata.QPaperID }}";
+        fetchQuestions(QPaperID);
+
+    </script>
+
+    <script>
+        // Course code can be dynamically set depending on the course
+
+        document.getElementById('column-view-btn').addEventListener('click', function () {
+            const modulesContainer = document.getElementById('modules-container');
+            modulesContainer.style.display = 'flex';
+            modulesContainer.style.flexDirection = 'column';  // Switch to column view
+
+
+        });
+
+        document.getElementById('row-view-btn').addEventListener('click', function () {
+            const modulesContainer = document.getElementById('modules-container');
+            modulesContainer.style.display = 'flex';
+            modulesContainer.style.flexDirection = 'row';  // Switch to row view
+
+
+        });
+        const courseCode = "{{ Metadata.CourseCode }}";
+        const modules = [1, 2, 3, 4, 5]; // Module numbers (1-5)
+
+        // Function to fetch and display syllabus
+        async function fetchSyllabus(courseCode, module) {
+            const response = await fetch(`/api/getTopicsSyllabus/${courseCode}/${module}/`);
+            if (response.ok) {
+                const data = await response.json();
+                const moduleData = data;
+
+                // Create HTML for the module
+                const moduleHtml = `
+                    <div class="collapsible-row">
+                        <!-- Module Heading -->
+                        <div class="module-heading">
+                            <button class="collapsible-button" data-toggle="collapse" data-target="#module${module}">
+                                Module ${module} - ${moduleData.Heading}
+                            </button>
+                        </div>
+
+                        <!-- Topics (Collapsible Section) -->
+                        <div id="module${module}" class="collapse">
+                            <div class="row">
+                                <div class="col-12">
+                                    <ul class="topic-list mt-3">
+                                        ${moduleData.Topics.map(topic => `<li>${topic}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Append the module HTML to the modules container
+                document.getElementById("modules-container").innerHTML += moduleHtml;
+            } else {
+                console.error(`Error fetching data for Module ${module}`);
+            }
+        }
+
+        // Function to load all modules
+        async function loadModules() {
+            for (const module of modules) {
+                await fetchSyllabus(courseCode, module);  // Wait for each module to be loaded before moving to the next
+            }
+        }
+
+        // Call the loadModules function to start fetching and displaying the syllabus
+        loadModules();
+
+
+
+
+    </script>
+
+    <script>
+        // Data passed from the Django view
+        const topicSummary = {{ TopicSummary| safe }};
+        const markWiseSplitDown = {{ MarkWiseSplitDown| safe }};
+        const moduleWiseSplitDown = {{ ModuleWiseSplitDown| safe }};
+
+        // Update Table dynamically
+        function updateTable() {
+            const tableBody = document.getElementById('topicMarksTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear previous rows
+
+            topicSummary.forEach(item => {
+                const row = tableBody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+
+                cell1.textContent = item.Topic;
+                cell2.textContent = item.TotalMarks;
+                cell3.textContent = item.ModuleName;  // Corrected here
+            });
+        }
+
+        updateTable();
+
+        // Modular Chart Function to reduce code repetition
+        function createChart(chartId, chartType, chartData, chartOptions) {
+            return new Chart(document.getElementById(chartId), {
+                type: chartType,
+                data: chartData,
+                options: chartOptions
+            });
+        }
+
+        // Extract Topic labels and Total Marks data
+        const topicLabels = topicSummary.map(item => item.Topic);  // Labels will be the Topic names
+        const topicData = topicSummary.map(item => item.TotalMarks);  // Data will be the total marks for each topic
+
+        // Radar chart configuration
+        const topicSummaryConfig = {
+            labels: topicLabels,
+            datasets: [{
+                label: 'Total Marks',
+                data: topicData,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                pointBorderColor: '#fff'
+            }]
+        };
+
+        const topicSummaryOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: {
+                    display: true,
+                    text: 'Topic-Wise Marks Distribution'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            return tooltipItem.raw + ' Marks';  // Only show the total marks for each topic
+                        }
+                    }
+                }
+            },
+        };
+
+        // Mark-Wise Line Chart Data and Configuration
+        const markLabels = Object.keys(markWiseSplitDown);
+        const markData = Object.values(markWiseSplitDown);
+
+        const markWiseData = {
+            labels: markLabels,
+            datasets: [{
+                label: 'Number of Questions',
+                data: markData,
+                fill: false,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                tension: 0.1
+            }]
+        };
+
+        const markWiseLineChartOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: { display: true, text: 'Mark-Wise Question Count' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        };
+
+        // Mark-Wise Bar Chart Data and Configuration
+        const markWiseBarChartOptions = {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                title: { display: true, text: 'Mark-Wise Question Count (Bar Chart)' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        };
+
+        const markWiseBarChartData = {
+            labels: markLabels,
+            datasets: [{
+                label: 'Number of Questions',
+                data: markData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Mark-Wise Pie Chart Data and Configuration
+        const markWisePieChartData = {
+            labels: markLabels,
+            datasets: [{
+                label: 'Number of Questions',
+                data: markData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ]
+            }]
+        };
+
+        // Module-Wise Charts Configuration (Pie, Doughnut, Bar)
+        const moduleLabels = Object.keys(moduleWiseSplitDown);
+        const moduleData = Object.values(moduleWiseSplitDown);
+
+        const moduleWisePieChartData = {
+            labels: moduleLabels,
+            datasets: [{
+                label: 'Total Marks',
+                data: moduleData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ]
+            }]
+        };
+
+        const moduleWiseDoughnutChartData = {
+            labels: moduleLabels,
+            datasets: [{
+                label: 'Total Marks',
+                data: moduleData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(153, 102, 255, 0.6)',
+                    'rgba(255, 159, 64, 0.6)'
+                ]
+            }]
+        };
+
+        const moduleWiseBarChartData = {
+            labels: moduleLabels,
+            datasets: [{
+                label: 'Total Marks',
+                data: moduleData,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Rendering Charts
+        createChart('topicSummaryChart', 'radar', topicSummaryConfig, topicSummaryOptions);
+        createChart('markWiseLineChart', 'line', markWiseData, markWiseLineChartOptions);
+        createChart('markWiseBarChart', 'bar', markWiseBarChartData, markWiseBarChartOptions);
+        createChart('markWisePieChart', 'pie', markWisePieChartData, {});
+        createChart('moduleWisePieChart', 'pie', moduleWisePieChartData, {});
+        createChart('moduleWiseDoughnutChart', 'doughnut', moduleWiseDoughnutChartData, {});
+        createChart('moduleWiseBarChart', 'bar', moduleWiseBarChartData, { responsive: true });
+    </script>
+</body>
+
+</html>
